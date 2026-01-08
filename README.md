@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ekşi Sözlük Benzeri Platform
 
 Ekşi Sözlük tarzında başlık-entry ilişkisine dayalı, kullanıcı etkileşimi yüksek bir tartışma platformu.
@@ -173,3 +174,6 @@ Frontend `http://localhost:3000` adresinde çalışacaktır.
 ## 📄 Lisans
 
 MIT
+=======
+# SozlukClone
+>>>>>>> 7ecb811a2f474068fc151d6c960e151cd589837e
