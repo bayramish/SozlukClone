@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  passwordHash String @map("password_hash")
+  role      Role     @default(USER)
+  isBanned  Boolean  @default(false) @map("is_banned")
+  bannedUntil DateTime? @map("banned_until")
+  banReason String?  @map("ban_reason")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  topics      Topic[]
+  entries     Entry[]
+  votes       Vote[]
+  permissions ModeratorPermission?
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model ModeratorPermission {
+  id                Int     @id @default(autoincrement())
+  userId            Int     @unique @map("user_id")
+  canDeleteEntry    Boolean @default(false) @map("can_delete_entry")
+  canDeleteTopic    Boolean @default(false) @map("can_delete_topic")
+  canBanUser        Boolean @default(false) @map("can_ban_user")
+  canEditEntry      Boolean @default(false) @map("can_edit_entry")
+  canMoveEntry      Boolean @default(false) @map("can_move_entry")
+  canMergeTopic     Boolean @default(false) @map("can_merge_topic")
+  
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("moderator_permissions")
+}
+
+model Topic {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  createdBy Int      @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  creator   User     @relation(fields: [createdBy], references: [id])
+  entries   Entry[]
+
+  @@map("topics")
+}
+
+model Entry {
+  id        Int      @id @default(autoincrement())
+  content   String
+  topicId   Int      @map("topic_id")
+  userId    Int      @map("user_id")
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  votes     Vote[]
+
+  @@map("entries")
+}
+
+model Vote {
+  id      Int   @id @default(autoincrement())
+  entryId Int   @map("entry_id")
+  userId  Int   @map("user_id")
+  value   Int   // +1 or -1
+
+  entry   Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user    User  @relation(fields: [userId], references: [id])
+
+  @@unique([entryId, userId])
+  @@map("votes")
+}
