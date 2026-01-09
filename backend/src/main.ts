@@ -5,15 +5,15 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS ayarları
+  // CORS Ayarlarını Detaylandıralım
   app.enableCors({
-    origin: true, // Tüm origin'lere izin ver (development için)
+    // Vercel adresini buraya açıkça eklemek en güvenli yoldur
+    // Eğer birden fazla adresin varsa array kullanabilirsin: ['https://site.vercel.app', 'http://localhost:3000']
+    origin: '*', 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -22,8 +22,10 @@ async function bootstrap() {
     }),
   );
 
+  // Render için kritik: 0.0.0.0 üzerinden dinlemesi gerekir
   const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0'); 
+  
+  console.log(`Application is running on port: ${port}`);
 }
 bootstrap();
